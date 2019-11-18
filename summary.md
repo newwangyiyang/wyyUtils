@@ -471,4 +471,129 @@
                     wrapper.destroy()
                 })
             ```
+            
+    ### 1、git的常用操作指北
+
+1. *配置用户信息*
+    ```
+        git config --global user.name '用户名'
+        git config --global user.email '邮箱地址'
+    ```
+2. *基本提交操作*
+    ```
+        git init
+        git add README.md
+        git commit -m '版本信息'
+        git remote add origin 'git地址'
+        git push -u origin master
+    ```
+3. *版本控制*
+    * 工作区和缓存区
+        * 工作区: 
+            * 电脑上的文件目录
+        * 版本库: 
+            * .git即git的版本库
+                * 最重要的就是Index即暂存区
+                * git自动为我们创建的第一个分支master，以及指向master的一个指针HEAD
+            * git add 把文件修改添加到暂存区
+            * git commit 提交更改，把暂存区的所有内容提交到当前分支（默认会提交到master分支上）
+            * git status 查看当前仓库的状态
+    * 版本回退
+        * 可将每次commit理解为一次快照
+        * git log 查看我们提交的历史记录（包含: 版本号、用户名、日期及版本描述等信息）
+        * git log --pretty=oneline --abbrev-commit
+        * commit后面的一串十六进制字符就是每次提交的版本号
+        * git reset 进行版本回退操作
+            * git reset --hard HEAD^
+                * HEAD表当前版本，上一版本就是HEAD^,上俩版本是HEAD^^, HEAD~30回退30个版本
+            * git reset --hard commit_id
+                * **注意: 当执行git reset 进行版本回退之后，之前最新的版本就无法通过 git log查询到，此时就需要使用 git reflog 命令查询git的操作记录，获取到commit_id**
+        * 重置命令（git reset [--hard|soft|mixed|merge|keep] [commit_id|HEAD]）
+            * --hard 重设暂存区和工作区，从<commit>以来在工作区的任何改变都被丢弃，并把HEAD指向<commit>。**彻底会退到某个版本，本地源码也会变为commit_id版本的内容**
+            * --soft 工作区的内容不做任何改变，更改会回退到暂存区中。即分支上的内容，会会退到暂存区。**会退到某个版本，只回退了commit的信息，如果还要提交，直接commit即可**
+            * --mixed 仅重设"暂存区"，本地文件不受影响，该模式是默认模式。**回退到某个版本，只保留源码，回退commit和index信息**
+                * --mixed可以进行文件粒度操作， 而 --hard和 --soft则不行
+            * Reset常用示例
+                ```
+                    git add test
+                    git reset HEAD test
+                    # 将test从暂存区状态回滚到制定的commit 时的暂存区状态
+                ```
+                ```
+                    git add test
+                    git commit -m '版本信息'
+                    git reset --soft HEAD^
+                    # 将test从 "已提交" 状态变为 "已暂存" 状态
+                ```
+                ```
+                    git branch topic # 已当前分支为基础，新建分支topic
+                    git reset --hard HEAD~2 # 在当前分支上回滚提交两个版本
+                    git checkout topic
+                    # 通过临时分支来保留提交，然后在当前分支上硬回滚
+                ```
+                ```
+                    git reset 497e350
+                    # 当前HEAD会指向 "497e350",暂存区中的状态会恢复到提交 "497e350"时暂存区的状态。
+                ```
+    * 撤销修改
+        * git checkout -- <file> 需要丢弃工作区某些文件修改时，可以使用**该命令仅会恢复工作区文件状态，不会对版本库有任何改动**
+        * 如果文件已commit到暂存区，会回到暂存区的状态
+        * 如果文件未提交，则会和版本库的状态一模一样
+
+    * 删除文件
+        ```
+            git rm test.txt # 从版本库中删除
+            rm test.txt # 本地文件删除
+            git commti -m '版本信息' # 版本提交
+        ```
+4. 分支管理
+    * git branch / git checkout 创建分支及切换分支
+        ```
+            git checkout -b dev
+            # 创建dev分支，然后切换到dev分支
+        ```
+        * -b 参数表切换并创建， 相当于
+        ```
+            git branch dev
+            git checkout dev
+        ```
+    * git branch 查看所有分支，会在当前分支前加上 * 号
+    * git branch -d dev 删除dev分支
+5. 分支策略管理
+    * 如果可能，git会用 Fast forward 模式，但这种模式下，删除分支后，会丢掉分支信息
+    * --no-ff 强制禁用Fast forawrd模式，git就会在merge时生成一个新的commit，从分支历史上就可以看出分支信息
+        ```
+            git merge --no-ff -m 'merge with no-ff' dev
+            # 禁用Fast forward模式，由于本次合并要创建一个新的commit，所以加上 -m 参数，写入commit描述信息
+        ```
+6. git fetch
+    ```
+        git fetch origin master:temp 
+        # 本地新建一个temp分支，并将远程origin仓库的master分支代码下载到本地temp分支
+        git diff temp
+        # 比较远程代码与本地代码的区别
+        git merge temp
+        # 将temp分支合并到本地master分支
+        git branch -d temp
+        # 删除本地分支temp
+    ```
+7. 解决冲突
+    ```
+        git stash # 先将本地修改的代码暂存
+        git stash list # 查看保存信息
+        git pull # 拉取内容
+        git stash pop # 还原暂存的内容
+    ```
+8. git fetch / git pull
+    **推荐使用git fetch 和 git merge 结合使用来代替git pull**
+9. git stash # 将工作现场"存储起来"
+    * git stash list # 查看
+    * git stash pop  # 恢复并删除存储的stash
+
+10. 多人协作
+    * git remote -v # 查看远程库的详细信息
+    * git push origin dev # 向远程分支推送
+    * git checkout -b dev origin/dev
+
+
    
