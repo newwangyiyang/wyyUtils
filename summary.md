@@ -715,4 +715,105 @@
     }
 ```
 
+### react开发技巧总结
+1. 组件通讯
+   1. props
+      1. props传递多个值
+        ```
+            # 传统写法
+            const {dataOne,dataTwo,dataThree} = this.state
+            <Com dataOne={dataOne} dataTwo={dataTwo} dataThree={dataThree}>
+            # 升级写法
+            <Com {...{dataOne, dataTwo, dataThree}} />
+        ```
+      2. Context使用Provider和Customer模式，在顶层的Provider中传入value，在子孙级的Customer中获取该值，并且能够传递函数
+        ```
+            import React from 'react'
+            let { Consumer, Provider } = React.createContext();
+            # 创建 context 并暴露Consumer和Provider模式
+            export {
+                Consumer,
+                Provider
+            }
+
+            # 父组件
+            // 导入 Provider
+            import {Provider} from "../../utils/context"
+
+            <Provider value={name}> # 传入value值供子孙组件使用
+                <div style={{border:'1px solid red',width:'30%',margin:'50px auto',textAlign:'center'}}>
+                    <p>父组件定义的值:{name}</p>
+                    <EightteenChildTwo></EightteenChildTwo>
+                </div>
+            </Provider>
+
+            # 子组件
+            // 导入Consumer
+            import { Consumer } from "../../utils/context"
+            function Son(props) {
+            return (
+                # Consumer容器,可以拿到上文传递下来的name属性,并可以展示对应的值
+                <Consumer>
+                {name => (
+                    <div
+                    style={{
+                        border: "1px solid blue",
+                        width: "60%",
+                        margin: "20px auto",
+                        textAlign: "center"
+                    }}
+                    >
+                    # 在 Consumer 中可以直接通过 name 获取父组件的值
+                    <p>子组件。获取父组件的值:{name}</p>
+                    </div>
+                )}
+                </Consumer>
+            );
+            }
+            export default Son;
+
+        ```
+       3. 路由传参
+          1. params
+            ```
+                <Route path="/path/:name" component={Com} />>
+                # 路由跳转
+                <Link to="/path/wangyiyang" />>
+                or
+                this.props.history.push({pathname: '/path/' + 'wangyiyang'})
+
+                # 参数获取
+                this.props.match.params.name
+            ```
+           2. query
+            ```
+                <Route path="/path" component={Com}>
+
+                <Link to={{path: '/path', query: {name: 'wyy'}}}>
+                or
+                this.props.history.push({pathname: '/path', query: {name: 'wyy'}})
+
+                this.props.location.query.name
+            ```
+           3. state
+            ```
+                <Route path='/sort ' component={Sort}/>
+                <Link to={{ path : '/sort ' , state : { name : 'sunny' }}}> 
+                this.props.history.push({pathname:"/sort ",state : { name : 'sunny' }});
+                读取参数用: this.props.location.state 
+            ```
+           4. search
+            ```
+                <Route path='/web/search ' component={Search}/>
+                <link to="web/search?id=12121212">xxx</Link>
+                this.props.history.push({pathname:`/web/search?id=${row.id}`});
+                读取参数用: this.props.location.search
+            ```
+           5. 优缺点
+            ```
+                1.params和 search 只能传字符串,刷新页面参数不会丢
+                2.query和 state 可以传对象,但是刷新页面参数会丢失
+            ```
+        
+
    
