@@ -814,6 +814,68 @@
                 1.params和 search 只能传字符串,刷新页面参数不会丢
                 2.query和 state 可以传对象,但是刷新页面参数会丢失
             ```
-        
+       4. onRef（父组件获取到子组件实例，从而在父组件中直接调用子组件属性或方法）
+           ```
+                # 子组件
+                export default class Son extends React.Component {
+                    componentDidMount() {
+                        this.props.onRef(this)
+                    }
+                    click = () => { ... }
+                    render() {
+                        return (<></>)
+                    }
+                }
 
+                # 父组件
+                export default class Parent extends React.Component {
+                    onRef = (son) => {
+                        # son 即为子组件实例，直接调用clicl方法
+                        son.click()
+                    }
+                    render() {
+                        return (<>
+                            <Son onRef={this.OnRef} />
+                        </>)
+                    }
+                }
+           ```
+       5. ref （通过React的ref属性获取到整个子组件实例，从而在父组件中对子组件进行操作）
+           ```
+                # 子组件
+                export default class Son extends React.Component {
+                    click = () => {...}
+                    render() {
+                        return (<></>)
+                    }
+                }
+
+                # 父组件
+                export default class Parent extends React.Component {
+                    componentDidMount() {
+                        this.refs['son']
+                    }
+                    render() {
+                        return (<>
+                            <Son ref="son" />>
+                        </>)
+                    }
+                }
+           ```
+2. require.context() # 批量引入某路径下的所有组件
+    ```
+        const path = require('path')
+        const files = require.context('@/components/home', false, /\.vue$/)
+        const modules = {}
+            files.keys().forEach(key => {
+            const name = path.basename(key, '.vue')
+            modules[name] = files(key).default || files(key)
+        })
+        components:modules
+
+        # require.context(path, useSubdirectories, regExp)
+        1. path: 组件路径
+        2. 是否检索子目录
+        3. 匹配文件的正则表达式，一般是文件名   
+    ```
    
