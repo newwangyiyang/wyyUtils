@@ -878,4 +878,61 @@
         2. 是否检索子目录
         3. 匹配文件的正则表达式，一般是文件名   
     ```
+3. state值改变的5中方式
+    ```
+        # 1
+        this.setState({count: 2})
+
+        # 2
+        this.setState(({count}) => ({count: count + 1}))
+
+        # 3. 接收state和props参数
+        this.setState((state, props) => {
+            return {count: state.count + props.step}
+        })
+
+        # 4. hooks
+        const [ count, setCount ] = useState(1)
+        setCount(10)
+
+        # 5. setState批量更新后的回调
+        this.setState({count: 2}, () => {
+            // state批量更新之后，调用该回调
+        })
+    ```
+4. componentWillReceiveProps / getDerivedStateFromProps
+    ```
+        # componentWillReceiveProps(nextProps)
+        # 该方法当props发生变化时执行，初始化render时不执行，在这个回调函数里面，你可以根据属性的变化，通过调用this.setState()来更新你的组件状态，旧的属性还是可以通过this.props来获取,这里调用更新状态是安全的，并不会触发额外的render调用。
+        # 方法里手动判断一下this.props和nextProps是否相同，不相同了才执行更新方法
+        # 注意: componentWillReceiveProps() 在生命周期的第一次render后不会被调用，但是会在之后的每次render中被调用 = 当父组件再次传送props,都会触发render方法。
+
+        componentWillReceiveProps(nextProps) {
+            if(nextProps.isVisible !== this.props.isVisible) {
+                # props改变后需要做的事情
+            }
+        }
+
+
+        # 16.x以后新增
+        static getDerivedStateFromProps(nextProps, prevState) {
+            # return 的值会更新setState
+            # 如果无需更新state，返回null
+        }
+    ```
+5. React.createRef(), 创建ref, 通过current属性获取组件的实例
+    ```
+        export default class Demo extends React.Component {
+            constructor(props) {
+                super(props)
+                this.myRef = React.createRef()
+            }
+
+            render() {
+                return (<input ref={this.myRef} />>)
+            }
+        }
+    ```
+6. React.forward((props, ref) => {  })
+
    
