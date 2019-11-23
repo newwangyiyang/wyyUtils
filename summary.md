@@ -501,6 +501,7 @@
         * 可将每次commit理解为一次快照
         * git log 查看我们提交的历史记录（包含: 版本号、用户名、日期及版本描述等信息）
         * git log --pretty=oneline --abbrev-commit
+        * git log --oneline --graph
         * commit后面的一串十六进制字符就是每次提交的版本号
         * git reset 进行版本回退操作
             * git reset --hard HEAD^
@@ -596,6 +597,79 @@
 11. git branch -a # 需详细了解
     git checkout -track origin/dev 
     git pull
+
+12. git merge 合并的理解
+    1.  分叉到两个不同的分支，又各自有不同的提交
+    ![不同分支，新的提交](https://upload-images.jianshu.io/upload_images/14360740-cd3bcb98824f8885.png?imageMogr2/auto-orient/strip|imageView2/2/w/800/format/webp)
+    2. git merge进行合并，会把最新的历史(c3和c4)和这两个分支的最近的祖先(c2)进行三方合并，合并的结果生成一个新的提交历史
+    ![merge合并](https://upload-images.jianshu.io/upload_images/14360740-0a5b42e4962e6309.png?imageMogr2/auto-orient/strip|imageView2/2/w/800/format/webp)
+    3. 注意: 在将三方merge合并的时候，总是需要以一个提交历史作为依据，在这个提交历史的基础上增加其他的两次修改，merge上使用的就是这个两个分支的最近祖先(c2)作为依据。
+13. git rebase
+    1.  rebase同样是通过合并来整合分叉的历史，唯一不同的就是，合并时所依据的提交历史不同（基），它是直接拿两个分支的最新提交历史（c3和c4）中的一个作为依据（基），比如以c3为基础。提取c4的更新
+        * 这个过程相当于改变c4的基底为c3，将c4的更新应用于c3上，生成新的c4。
+    ![将c4的修改变基到c3上](https://upload-images.jianshu.io/upload_images/14360740-e1bcbdf345ed1ef4.png?imageMogr2/auto-orient/strip|imageView2/2/w/800/format/webp)
+        * 操作
+          * 切换分支到experiment
+          * experiment分支变基为master分支(即将experiment分支的更新，应用于c3，重新创建了一个分支)
+        ```
+            git checkout experiment
+            git rebase master
+        ```
+        * 分支合并
+    ![回到master分支进行合并](https://upload-images.jianshu.io/upload_images/14360740-70b7b5695752e87e.png?imageMogr2/auto-orient/strip|imageView2/2/w/800/format/webp)
+        * 操作
+            * 切换到master分支
+            * 在master分支上对experiment进行合并
+        ```
+            git checkout master
+            git merger experiment
+        ```
+    2. git rebase [basebranch][topicbranch]
+        * 以basebranch为基，将topicbranch的修改应用于basebranch上
+    3. 总结: 
+       1. 变基（rebase）: 将一个分支的更新应用于另外一个分支
+       2. 三方合并（merge）: 把两方的最后提交在共同祖先的基础上进行合并
+    4. 使用场景
+       1. 本地与远程的同一分支提交历史不一致
+            * 例如: 本地的分支落后于远程线上的分支会push失败
+              * 此时，需先pull，版本与远程代码同步
+              * 再进行push操作
+              * 注意: 该操作，git会自动将本地代码跟远程代码进行合并，然后生成一个新的提交历史
+                ```
+                    f63ecbf (HEAD -> master) Merge branch 'master' of https://gitee.com/greenhn/ganlin
+                ```
+            * 使用rebase进行解决
+                ```
+                    # 将本地分支在远程分支的基础上进行更新
+                    git pull --rebase
+                    git push
+                ```
+        2. 不同分支间的合并
+            * 例如: 不同分支文件有冲突，造成merge失败
+               * git checkout -b dev 
+               * git checkout master
+               * git merge dev
+               * git status # 查看冲突，然后进行解决再次提交
+            * 采用rebase进行分支合并
+               * git checkout dev
+               * git rebase master # 在master的基础上应用dev分支的更新
+               * git status # 有冲突时，会中断rebase操作，查看冲突，解决冲突
+               * git rebase --continue # 继续rebase
+               * git checkout master # 切换到master分支 
+               * git merge dev # 合并dev
+    5. 一般提交操作，推荐使用rebase
+        ```
+            git pull --rebase
+            git add .
+            git commit -m 'feat: xxx'
+            git push
+        ```
+    6. git rebase --abort 在任何时候可终止rebase操作，并且分支会回退到rebase的开始前的状态
+        ```
+            git rebase --continue
+            git rebase --abort
+        ```
+            
 
 ### PropTypes的使用
 1. 示例
