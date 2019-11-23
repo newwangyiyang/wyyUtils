@@ -1008,5 +1008,286 @@
         }
     ```
 6. React.forward((props, ref) => {  })
+7. static 使用
+    * 声明静态组件，可通过类型直接进行调用
+      ```
+        export default class Demo extends React.Component {
+            static getName() {
+                return 'wangyiyang'
+            }
+
+            static getDeviredStateFromProps(nextProps, prevState) {
+
+            }
+
+            render() {
+                return <>...</>
+            }
+        }
+        # 通过类名直接进行调用
+        Demo.getName() # wangyiyang
+      ```
+    * static getDerivedStateFromProps 就属于静态方法
+    * 声明类中: 
+      ```
+        import PropTypes from 'prop-types'
+        export default class Demo extends React.Component {
+            static propTypes = {
+                name: PropTypes.string
+            }
+            static defaultProps {
+                name: 'wangyiyang'
+            }
+
+            state = {
+                age: 27
+            }
+            render() {...}
+        }
+      ```
+8. constructor和super
+   1. constructor为构造函数的主函数，该函数内部的this指向由该类new 出的实例
+   2. super关键字用于访问父类的属性和调用父类的构造函数
+        ```
+            export default class Demo extends React.Component {
+                constructor(props) {
+                    super(props)
+                    this.state = {
+                        name: 'wangyiyang'
+                    }
+                }
+                render() {...}
+            }
+        ```
+9. 使用箭头函数声明实例方法，无需考虑this的指向问题
+    ```
+        export default class Demo extends React.Component {
+            state = {
+                num: 0
+            }
+            addNum = () => {
+                # 使用箭头函数，无需考虑函数内部this(类实例)指向的问题
+                this.setState(({ num }) => ({num: num + 1}))
+            }
+            render() {
+                return (
+                    <>
+                        <h4>{this.state.num}</h4>
+                        <button onClick={this.addNum}>addNum</button>
+                    </>
+                )
+            }
+        }
+    ```
+10. react-loadable # 用来控制组件的异步加载，
+    1.  loader:需要加载的组件
+    2.  loading:未加载出来的页面展示组件
+    3.  delay:延迟加载时间
+    4.  timeout:超时时间
+11. 递归组件调用示例
+    ```
+        export dfault class Item extends React.Component {
+            render() {
+                const { arr } = this.props
+                # arr数据类似于: 
+                [
+                    {
+                        name: 'wyy',
+                        children: [
+                            {
+                                name: 'mz'
+                            }
+                        ]
+                    }
+                ]
+                <div>
+                    {
+                        arr.map((v, i) => (
+                            <React.Fragment key={i}>
+                                <span>{v.name}</span>
+                                {
+                                    v.children &&
+                                    v.children.length > 0 &&
+                                    <Item arr={v.children} />
+                                    # 此处即为递归进行调用Items组件
+                                }
+                            </React.Fragment>
+                        ))
+                    }
+                </div>
+            }
+        }
+    ```
+12. 受控组件和非受控组件
+    * 受控组件: 组件拥有自己的状态
+      ```
+        export default class Demo extends React.Component {
+            constructor() {
+                this.state = {
+                    value: 'wyy'
+                }
+            }
+            render() {
+                retuen <input value={this.state.value} type="text" />
+            }
+        }
+      ```
+    * 非受控组件: 组件没有自己的状态，在父组件通过ref来控制，或者通过props进行传值
+      ```
+        export default class Demo extends React.Component {
+            render() {
+                const { value } = this.props
+                return <input type="text" value={value} />
+            }
+        }
+      ```
+13. 组件动态显示隐藏
+    ```
+        { flag ? <Demo /> : null }
+        { flag && <Demo /> }
+    ```
+14. React.memo
+    * 第一个参数为函数组件（纯函数），第二个参数为比较函数
+    * 如果组件传递的props与上一次一致，则不重新渲染组件，从而提高浏览器性能
+    * 传递第二个参数来代替shouleComponentUpdate，组件是否需要重新渲染
+    ```
+        function propsEqual(prevProps, nextProps) {
+            # 注意: 如果两次传递的props属性一致，返回true, 否则返回false
+            return prevProps.value === nextProps.value
+        }
+
+        export default React.memo(
+            props => <div>{props.value}</div>,
+            propsEqual
+        )
+    ```
+15. React.PureComponent
+    * 内部通过props和state的浅比较，避免组件的重复渲染，即代替shouldComponent
+    * React.PureComponent作用于类，React.memo作用于函数，
+    * React.PureComponent跟React.memo的主要目的都是为了提高组件的性能
+    ```
+        export default class Demo extends React.PureComponent {
+            render() {
+                return (
+                    <div>{this.props.value}</div>
+                )
+            }
+        }
+    ```
+    * 注意: **工作中应该经常使用 React.memo 和 React.PureComponent**
+16. jsx中渲染falsy值
+    * React中，不会对虚值进行展示，即页面不展示虚值
+    * 如需展示虚值 String(falsy)
+    ```
+        export default class Demo extends React.Component {
+            render() {
+                return <h4>{String(false)}---{String(null)}</h4>
+            }
+        }
+    ```
+17. ReactDOM.createPortal
+    * 组件的render函数返回的元素一般会挂载到它的父组件，(appendChild)
+    * 而createPortal提供一种将组件渲染到父组件以外的DOM节点上
+    * 第一个参数: 需要挂载的组件；第二个参数: 挂载点（DOM节点）
+    ```
+        import React from 'react'
+        import ReactDOM from 'react-dom'
+
+        export default class Demo extends React.Component {
+            children = () => {
+                return (
+                    <div>this is children Component</div>
+                )
+            }
+
+            render() {
+                # 将children组件挂载到 id="app" DOM节点上
+                return ReactDOM.createPortal(
+                    this.children(),
+                    document.querySelector('#app')
+                )
+            }
+        }
+    ```
+18. React中使用innerHTML
+    ```
+        render() {
+            const html = '<h4>wyy</h4>'
+            return (
+                <div 
+                dangerouslySetinnerHTML={{__html: html}}
+                ></div>
+            )
+        }
+    ```
+19. React.createElement
+    1.  语法: React.createElement(type, [props], [...children])
+    2.  实质上，jsx中的DOM元素最后都会转化为React.createElement
+    ```
+        render() {
+            return (
+                {
+                    React.createElement(
+                        'div',  # type
+                        {value: 'wyy'}, # props
+                        # children
+                        React.createElement('span', {name: 'mz'}),
+                        React.createElement('h5', {title: 'wangyiyang'})
+                    )
+                }
+            )
+        }
+    ```
+20. React.cloneElement
+    * 作用: 复制组件，给组件传值或者添加属性
+    * 语法: 
+        ```
+            React.cloneElement(
+                element,
+                [props],
+                [...children]
+            )
+        ```
+21. React.Fragment
+22. 获取DOM上的自定义属性，例如: data-id
+    ```
+        export default class Demo extends React.Component {
+            click = e => {
+                e.target.dataset.id
+            }
+            render() {
+                return (
+                    <div data-id="1" onClick={this.click}>wangyiyang</div>
+                )
+            }
+        }
+    ```
+### loading 动画    
+    ```
+        .loadingWrap {
+            width: 400px;
+            height: 20px;
+            background-color: #eaeaea;
+            overflow: hidden;
+            .loading {
+                transform: translateX(-100px);
+                height: 20px;
+                width: 100px;
+                background-color: royalblue;
+                animation: goahead 2s linear infinite normal;
+            }
+        }
+
+        @keyframes goahead {
+            0% {
+                transform: translateX(-100px);
+            }
+            100% {
+                transform: translateX(400px);
+            }
+        }
+    ```
+
+    
 
    
