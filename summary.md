@@ -91,7 +91,7 @@
     ```
    2. gulp.spritesmith
 
-4. iconfont: 通过字体的方式展示图标，多用于简单徒刑，特殊字体等；
+4. iconfont: 通过字体的方式展示图标，多用于简单图形，特殊字体等；
 
 5. base64: 是网络最常见的用于传输8Bit字节码的编码方式之一；可将图片编码为特殊的字符串，由52个大小写字母和19个数字，以及+, /, =三个字符组成
    ##### 优点
@@ -250,7 +250,7 @@
                     # 发现button DOM元素
                     const button = wrapper.find('button')
                     # 测试点击按钮事件有没有正确被触发
-                    button.trugger('click')
+                    button.trigger('click')
                     # 断言函数被触发，且被触发一次
                     expect(mockFn).toBeCalled()
                     expect(mockFn).toHaveBeenCalledTimes(1)
@@ -594,16 +594,21 @@
     * git remote -v # 查看远程库的详细信息
     * git push origin dev # 向远程分支推送
     * git checkout -b dev origin/dev
-11. git branch -a # 需详细了解
-    git checkout -track origin/dev 
-    git pull
+11. 备注: 
+    1.  git branch -a # 查看所有分支，包含本地和远程
+    2.  git checkout -track origin/dev 
+        * 在本地创建一个与 dev 同名分支跟踪远程分支，后面再对该分支使用push和pull会自动同步。
+        ```
+            如果本地新建了一个分支 branch_name，但是在远程没有，这时候 push 和 pull 指令就无法确定该跟踪谁，一般来说我们都会使其跟踪远程同名分支，所以可以利用** git push --set-upstream origin branch_name ，这样就可以自动在远程创建一个 branch_name 分支，然后本地分支会 ****track**** 该分支。后面再对该分支使用 push 和 pull 就自动同步**。无需再指定分支。
+        ```
+    3.  git pull
 
 12. git merge 合并的理解
     1.  分叉到两个不同的分支，又各自有不同的提交
     ![不同分支，新的提交](https://upload-images.jianshu.io/upload_images/14360740-cd3bcb98824f8885.png?imageMogr2/auto-orient/strip|imageView2/2/w/800/format/webp)
-    2. git merge进行合并，会把最新的历史(c3和c4)和这两个分支的最近的祖先(c2)进行三方合并，合并的结果生成一个新的提交历史
+    1. git merge进行合并，会把最新的历史(c3和c4)和这两个分支的最近的祖先(c2)进行三方合并，合并的结果生成一个新的提交历史
     ![merge合并](https://upload-images.jianshu.io/upload_images/14360740-0a5b42e4962e6309.png?imageMogr2/auto-orient/strip|imageView2/2/w/800/format/webp)
-    3. 注意: 在将三方merge合并的时候，总是需要以一个提交历史作为依据，在这个提交历史的基础上增加其他的两次修改，merge上使用的就是这个两个分支的最近祖先(c2)作为依据。
+    1. 注意: 在将三方merge合并的时候，总是需要以一个提交历史作为依据，在这个提交历史的基础上增加其他的两次修改，merge上使用的就是这个两个分支的最近祖先(c2)作为依据。
 13. git rebase
     1.  rebase同样是通过合并来整合分叉的历史，唯一不同的就是，合并时所依据的提交历史不同（基），它是直接拿两个分支的最新提交历史（c3和c4）中的一个作为依据（基），比如以c3为基础。提取c4的更新
         * 这个过程相当于改变c4的基底为c3，将c4的更新应用于c3上，生成新的c4。
@@ -624,12 +629,12 @@
             git checkout master
             git merger experiment
         ```
-    2. git rebase [basebranch][topicbranch]
+    1. git rebase [basebranch][topicbranch]
         * 以basebranch为基，将topicbranch的修改应用于basebranch上
-    3. 总结: 
+    2. 总结: 
        1. 变基（rebase）: 将一个分支的更新应用于另外一个分支
        2. 三方合并（merge）: 把两方的最后提交在共同祖先的基础上进行合并
-    4. 使用场景
+    3. 使用场景
        1. 本地与远程的同一分支提交历史不一致
             * 例如: 本地的分支落后于远程线上的分支会push失败
               * 此时，需先pull，版本与远程代码同步
@@ -644,7 +649,7 @@
                     git pull --rebase
                     git push
                 ```
-        2. 不同分支间的合并
+        1. 不同分支间的合并
             * 例如: 不同分支文件有冲突，造成merge失败
                * git checkout -b dev 
                * git checkout master
@@ -657,14 +662,14 @@
                * git rebase --continue # 继续rebase
                * git checkout master # 切换到master分支 
                * git merge dev # 合并dev
-    5. 一般提交操作，推荐使用rebase
+    4. 一般提交操作，推荐使用rebase
         ```
             git pull --rebase
             git add .
             git commit -m 'feat: xxx'
             git push
         ```
-    6. git rebase --abort 在任何时候可终止rebase操作，并且分支会回退到rebase的开始前的状态
+    5. git rebase --abort 在任何时候可终止rebase操作，并且分支会回退到rebase的开始前的状态
         ```
             git rebase --continue
             git rebase --abort
@@ -1262,6 +1267,109 @@
             }
         }
     ```
+### react中的单元测试
+    * 基于create-react-app（该脚手架已集成jest）
+    * 需额外安装 enzyme， enzyme-adapter-react-16 （获取React输出的一个工具，通过该工具可获得我们对组件所需要的信息）
+        ```
+            import React from 'react'
+            import { configure, mount, shallowMount } from 'enzyme'
+            import Adapter from 'enzyme-adapter-react-16'
+            import Header from './component/Header'
+
+            configure({adapter: Adapter})
+
+            describe('React unit test', () => {
+                it('Header test', () => {
+                    const wrapper = mount(<Header />>)
+                    expect(wrapper.find('h4').text()).toBe('wyy')
+                })
+            })
+        ```
+1. 浅渲染shallow
+   * Shallow Rendering(浅渲染)指的是，将一个组件渲染成虚拟DOM对象，
+   * 但只渲染一层，不渲染子组件，处理速度非常快，
+   * 不需要DOM环境，因为它根本没有渲染成真实的DOM元素；
+   * **注意: shallow不能测试子组件的相关性代码**
+    ```
+        const wrapper = shallow(<Header name="王一杨" />)
+    ```
+2. 全部渲染mount （Full DOM Rendering）
+   * 将React组件加载成真实的DOM元素
+   * 回去渲染所有子组件
+3. render: 根据React组件得到一个静态的HTML的文本结果
+    * **注意: render不能模拟交互事件**
+      ```
+        const wrapper = mount(<Header />)
+        wrapper.find('a').simulate('click')
+      ```
+
+
+    * 总结: 
+      * shallow的渲染效率最高， render次之，而mount最低
+      * console.log(wrapper)
+      * shallow 渲染出来的结果为 ShallowWrapper {}
+      * mount   渲染出来的结果为 ReactWrapper {}
+      * render  渲染出来的结果为 `<div>render</div>`
+4. 常用方法
+   1. simulat(event, mock): 模拟事件，event为事件名，mock为event object
+   2. instance(): 返回组件实例
+   3. find(selector): 根据选择器查找节点
+   4. at(index): 根据索引查找对应节点
+   5. get(index): 返回一个react node
+   6. contains(nodeOrNodes): 当前对象是否包含参数
+   7. text(): 组件的文本内容
+   8. html(): 当前组件的HTML代码格式
+   9. props(): 获取传递组件的props属性
+   10. prop('name'): 获取props的对应属性
+   11. state(): 获取组件的state
+   12. state('name'): 获取state的对应属性
+   13. setState(nextState): 设置组件的state
+   14. setProps(nextProps): 设置组件的porps
+5. 测试React组件的文本内容
+6. 测试React组件state: 获取state: wrapper.state()
+   ```
+    it('state unit test', () => {
+        const wrapper = mount(<Header />)
+        expect(wrapper.state().name).toBe('wyy')
+        # or
+        expect(wrapper.state('name')).toBe('wyy')
+    })
+   ```
+7. 测试React组件的props: 获取props: wrapper.props()
+   ```
+    it('props unit test', () => {
+        const wrapper = mount(<Header name="wyy" />>)
+        expect(wrapper.props().name).toBe('wyy')
+    })
+   ```
+8. 测试React组件的DOM节点事件是否触发: simulate 
+   1.  TODO: 需要解决simulate触发事件问题
+   ```
+    it('button click called', () => {
+        const wrapper = shallow(<header />)
+        const fn = jest.spyOn(wrapper.instance(), 'click')
+        # 注意: <button onClick={() => {this.click()}}></button>
+        # onClick事件必须在外面嵌套箭头函数，推荐写法
+        wrapper.find('button').simulate('click')
+        expect(fn).toHaveBeenCalled()
+        expect(fn).toHaveBeenCalledTimes(1)
+        expect(fn).toHaveBeenCalledWith('params')
+        fn.mockRestore()
+    })
+   ```
+9.  测试React组件中的事件(例如: 获取事件返回值，对返回值进行判断)
+   ```
+        export default class Header extends React.Component {
+            myClick = () => { return 1 }
+            render() {...}
+        }
+
+        it('click called', () => {
+            const wrapper = shallow(<Header />)
+            const res = wrapper.instance().myClick()
+            expect(res).toBe(1)
+        })
+   ```
 ### loading 动画    
     ```
         .loadingWrap {
