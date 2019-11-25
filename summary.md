@@ -1325,8 +1325,39 @@
    12. state('name'): 获取state的对应属性
    13. setState(nextState): 设置组件的state
    14. setProps(nextProps): 设置组件的porps
-5. 测试React组件的文本内容
-6. 测试React组件state: 获取state: wrapper.state()
+5. jest对象
+   1. jest.fn(): 返回一个全新没有使用过的mock function,这个function在调用的时候会记录很多与调用相关的信息
+   2. jest.mock(moduleName, factory, options): 用来mock一些模块或文件
+   3. jest.spyOn(object, methodName): 返回一个mock函数，和jest.fn类似，但是能追踪object[methodName]的调用信息。
+   * 使用mock函数可以轻松模拟代码之间的关系。（jest.fn(); jest.spyOn()）
+   * 使用spy的时候，在测试用例结束后，需要对spy进行restore,不然spy会一直存在
+    ```
+        it('spy unit test', () => {
+            const fn = jest.spyOn(Header.prototype, 'componentDidMount')
+
+            ...
+
+            fn.mockRestore()
+        })
+    ```
+6. 快照
+   * 快照会生成一个组件的ui结构，以字符串的形式存放在__snapshots__文件中，通过比较两个字符串来判断UI是否改变
+    ```
+        # 需额外引入
+        import renderer from 'react-test-renderer'
+        it('snapshots unit test', () => {
+            const wrapper = render.create(<Header />)
+            expect(wrapper.toJSON()).toMatchSnapshot()
+        })
+
+        # or
+        # 需要额外引入
+        import toJson from "enzyme-to-json"; 
+        const wrapper = mount(<Header />)
+        expect(toJson(wrapper)).toMatchSnapshot()
+    ```
+7. 测试React组件的文本内容
+8. 测试React组件state: 获取state: wrapper.state()
    ```
     it('state unit test', () => {
         const wrapper = mount(<Header />)
@@ -1335,15 +1366,20 @@
         expect(wrapper.state('name')).toBe('wyy')
     })
    ```
-7. 测试React组件的props: 获取props: wrapper.props()
+9.  测试React组件的props: 获取props: wrapper.props()
    ```
     it('props unit test', () => {
-        const wrapper = mount(<Header name="wyy" />>)
+        # 注意: 此处必须是mount来进行渲染
+        const wrapper = mount(<Header name="wyy" />)
         expect(wrapper.props().name).toBe('wyy')
     })
    ```
-8. 测试React组件的DOM节点事件是否触发: simulate 
-   1.  TODO: 需要解决simulate触发事件问题
+
+   ```
+    expect(wrapper.instance().state.name).toBe('muzi')
+    expect(wrapper.instance().props.age).toBe(27)
+   ```
+11. 测试React组件的DOM节点事件是否触发: simulate 
    ```
     it('button click called', () => {
         const wrapper = shallow(<header />)
