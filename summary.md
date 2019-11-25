@@ -1329,6 +1329,20 @@
    1. jest.fn(): 返回一个全新没有使用过的mock function,这个function在调用的时候会记录很多与调用相关的信息
    2. jest.mock(moduleName, factory, options): 用来mock一些模块或文件
    3. jest.spyOn(object, methodName): 返回一个mock函数，和jest.fn类似，但是能追踪object[methodName]的调用信息。
+      * 注意事项: 
+        ```
+            # 组件中声明事件的方式
+            test = () => {}
+
+            # 则测试中需使用wrapper.instance()，进行mock事件的绑定
+            const fn = jest.spyOn(wrapper.instance(), 'click')
+
+            # or
+
+            # 组件中的声明方式 bind,需使用wrapper.prototype
+            test() {}
+            const fn = jest.spyOn(wrapper.prototype, 'click')
+        ```
    * 使用mock函数可以轻松模拟代码之间的关系。（jest.fn(); jest.spyOn()）
    * 使用spy的时候，在测试用例结束后，需要对spy进行restore,不然spy会一直存在
     ```
