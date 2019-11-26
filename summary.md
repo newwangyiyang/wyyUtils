@@ -1490,6 +1490,66 @@
         })
     ```
 * expect.assertions(1): 表当前测试至少有一个断言被触发
+### js小技巧
+1. Math.random().toString(36).substr(2): 随机生成数字和字母组合字符串
+2. 转换数字:
+   ```
+    +'10' # 10
+    ~~'10' # 10
+   ```
+3. 浮点数转整数: 
+   ```
+    10.9 | 0 # 10
+    -10.9 | 0 # 10
+
+    ~~10.9 # 10
+    ~~-10.9 # 10
+   ```
+4. 判断小数是否相等 0.1 + 0.2 === 0.3
+   ```
+    function equal(num1, num2) {
+        return Math.abs(num1 - num2) < Math.pow(2, -52)
+    }
+
+    equal(0.1+0.2, 0.3) # true
+   ```
+5. 数组的去重方式
+    1. Set:  [...new Set([...])]
+        ```
+            [...new Set([1,2,3,1,2,3])]
+            # [1,2,3]
+        ```
+    2. Map: 利用Map对象key的唯一性
+        ```
+            Array.prototype.unique = function() {
+                const map = new Map()
+                return this.filter(v => !map.has(v) && map.set(v, null))
+            }
+
+            [1,2,3,1,2,3].unique() # [1,2,3]
+        ```
+    3. 利用indexOf或includes进行成员判断
+        ```
+            Array.prototype.unique = function() {
+                return this.filter((item, index) => {
+                    return this.indexOf(item) === index;
+                })
+            }
+            var array = [1, 2, 3, 43, 45, 1, 2, 2, 4, 5];
+            array.unique();
+        ```
+6. 去除字符串的前后空格
+    * /^\s+|\s+$/g
+    ```
+        '  a  '.replace(/^\s+|\s+$/g, '') # a
+    ```
+7. 伪数组转换为真数组
+   1. Array.prototype.slice.call(arguments)
+   2. Array.from(arguments)
+
+
+
+
 ### loading 动画    
     ```
         .loadingWrap {
