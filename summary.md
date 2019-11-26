@@ -1393,7 +1393,7 @@
     expect(wrapper.instance().state.name).toBe('muzi')
     expect(wrapper.instance().props.age).toBe(27)
    ```
-11. 测试React组件的DOM节点事件是否触发: simulate 
+10. 测试React组件的DOM节点事件是否触发: simulate 
    ```
     it('button click called', () => {
         const wrapper = shallow(<header />)
@@ -1407,7 +1407,7 @@
         fn.mockRestore()
     })
    ```
-9.  测试React组件中的事件(例如: 获取事件返回值，对返回值进行判断)
+11.  测试React组件中的事件(例如: 获取事件返回值，对返回值进行判断)
    ```
         export default class Header extends React.Component {
             myClick = () => { return 1 }
@@ -1420,6 +1420,76 @@
             expect(res).toBe(1)
         })
    ```
+12. 测试Promise
+    1.  .resolves来测试Promise成功的返回结果
+    2.  .rejects测试Promise失败的返回结果
+
+    ```
+        # utils.js
+        export const myPromise = type => new Promise(
+            (resolve, reject) => {
+                if(type === 1) {
+                    resolve(100)
+                } else {
+                    reject({error: 'error'})
+                }
+        })
+
+        # index.test.js
+        import { myPromise } from '../utils/utils.js'
+        describe('utils.js unit test', () => {
+            # resolves
+            it('promise resolve', () => {
+                return expect(myPromise(1)).resolves.toBe(100)
+            })
+
+            # reject
+            it('promise reject', () => {
+                # 表当前测试至少又一个断言被触发
+                expect.assertions(1)
+                expect(myPromise(0)).rejects.toEqual(
+                    {error: 'error'}
+                )
+            })
+
+            # then
+            it('then', () => {
+                # 表当前测试至少又一个断言被触发
+                expect.assertions(1)
+                # 必须加上return，不然没有等到promise，测试就会结束
+                return myPromise(1).then(data => {
+                    expect(data).toBe(100)
+                })
+            })
+
+            # catch
+            it('catch', () => {
+                expect.assertions(1)
+                return myPromise(0).catch(data => {
+                    expect(data).toEqual({error: 'error'})
+                })
+            })
+        })
+    ```
+13. 测试: async/await
+    * 使用try...catch进行异常捕获
+    ```
+        it('async resolve', async () => {
+            expect.assertions(1)
+            const data = await myPromise(1)
+            expect(data).toBe(1)
+        })
+
+        it('async reject', async () => {
+            expect.assertions(1)
+            try {
+                await myPromise(0)
+            } catch(e) {
+                expect(e).toEqual({error: 'error'})
+            }
+        })
+    ```
+* expect.assertions(1): 表当前测试至少有一个断言被触发
 ### loading 动画    
     ```
         .loadingWrap {
